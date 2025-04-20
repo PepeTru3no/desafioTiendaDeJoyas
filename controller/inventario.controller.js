@@ -1,50 +1,60 @@
 import { getInventario, filterInventario, findJewelById } from "../models/inventario.models.js";
+import { setHATEOAS } from "../util/utils.js";
 
 export const getInventarioController = async (req, res) => {
-    const query = req.query;
+    const query = req.data;
     try {
-        const data = await getInventario(query);
-        const result = setHATEOAS(data);
-        res.json(result);
+        if (query.valid) {
+            const data = await getInventario(query);
+            if (data != "") {
+                const result = setHATEOAS(data);
+                res.json(result);
+            } else {
+                res.json({
+                    status: 200,
+                    mesage: "No se encontraron resultados para su busqueda",
+                });
+            }
+        }
     } catch (error) {
-        res.json({errorController: error});
+        res.json({ errorController: error });
     }
 }
 
 export const filterInventarioController = async (req, res) => {
-    const query = req.query;
+    const { data } = req;
     try {
-        const data = await filterInventario(query);
-        res.json(data);
+        if (data.valid) {
+            const rsp = await filterInventario(data);
+            if (rsp != "") {
+                res.json(rsp);
+            } else {
+                res.json({
+                    status: 200,
+                    mesage: "No se encontraron resultados para su busqueda",
+                });
+            }
+
+        }
+
     } catch (error) {
-        res.json({errorController: error});
+        next({ errorController: error });
     }
 }
 
-const setHATEOAS = (data) => {
-    const totalJoyas = data.length;
-    let stockTotal = 0;
-    const results = data.map((d) => {
-        stockTotal += d.stock;
-        return {
-            name: d.nombre,
-            href: `/joyas/joya/${d.id}`
-        }
-    });
-    const HATEOAS = {
-        totalJoyas,
-        stockTotal,
-        results
-    };
-    return HATEOAS;
-}
-
 export const findJewelByIdController = async (req, res) => {
-    const query = req.params;
+    const query = req.data;
     try {
-        const data = await findJewelById(query)
-        res.json(data);
+        if (query.valid) {
+            const data = await findJewelById(query)
+            res.json(data);
+        } else {
+            res.json({
+                status: 200,
+                mesage: "No se encontraron resultados para su busqueda",
+            });
+        }
     } catch (error) {
-        res.json({errorController: error});
+        res.json({ errorController: error });
     }
 }
